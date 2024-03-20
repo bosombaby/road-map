@@ -36,18 +36,21 @@ const isShowForm = ref(false);
 const inputvalue = ref("");
 let dialogData = ref(null); //用来暂存获取到的数据
 let map = null;
+const request = axios.create({
+  baseURL: "https://mock.apifox.com/m1/4197198-0-default",
+  timeout: 1000,
+});
 
-axios({
-  method: "get",
-  url: "http://127.0.0.1:4523/m1/4090288-0-default/get_location",
-})
-  .then((res) => {
-    console.log("1");
-    console.log(res.data);
-  })
-  .catch((error) => {
-    console.error("Error fetching data:", error);
-  });
+const coordinates = [];
+let getPointArray = async () => {
+  const res = await request.get("/get_location");
+  console.log("获取数据", res.data.results);
+  for (let item of res.data.results) {
+    const { lon, lat } = item;
+  }
+};
+
+getPointArray();
 
 // 样式表
 let stylesArray = [
