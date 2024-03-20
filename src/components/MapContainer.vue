@@ -1,36 +1,29 @@
 <template>
-  <div class="container-wrapper">
-    <div id="container"></div>
-    <div class="searchcontain">
-      <el-input
-        v-model="inputvalue"
-        placeholder="请输入船只编号"
-        class="custom-input"
-        size="large"
-        clearable
-      >
-        <template #append>
-          <el-button :icon="Search" @click="handleFormClick"
-        /></template>
-      </el-input>
-    </div>
-    <div class="input-card">
-      <h5>左击获取经纬度：</h5>
-      <div class="input-item">
-        <input type="text" readonly="true" :value="lnglat" id="lnglat" />
-      </div>
-    </div>
-    <MapForm
-      :dialogData="dialogData"
-      :markerData="markerData"
-      :isShow="isShowForm"
-      @close="closeDialog"
-    />
+  <div id="container"></div>
+  <div class="searchcontain">
+    <el-input
+      v-model="inputvalue"
+      placeholder="请输入船只编号"
+      class="custom-input"
+      size="large"
+      clearable
+    >
+      <template #append>
+        <el-button :icon="Search" @click="handleFormClick"
+      /></template>
+    </el-input>
   </div>
+  <div class="input-card">
+    <h5>左击获取经纬度：</h5>
+    <div class="input-item">
+      <input type="text" readonly="true" :value="lnglat" id="lnglat" />
+    </div>
+  </div>
+  <MapForm :dialogData="dialogData" :isShow="isShowForm" @close="closeDialog" />
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, reactive, popScopeId } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import AMapLoader from "@amap/amap-jsapi-loader";
 import img1 from "../assets/image/客船.png";
 import img2 from "../assets/image/圆点.png";
@@ -43,14 +36,19 @@ const isShowForm = ref(false);
 const inputvalue = ref("");
 let dialogData = ref(null); //用来暂存获取到的数据
 let map = null;
-//坐标(测试数据)
-let coordinates = [
-  [122.01, 31],
-  [122.1, 31.1],
-  [122.12, 30.45],
-  [122.168454, 32.539844],
-  [121.1947, 33.901003],
-];
+
+axios({
+  method: "get",
+  url: "http://127.0.0.1:4523/m1/4090288-0-default/get_location",
+})
+  .then((res) => {
+    console.log("1");
+    console.log(res.data);
+  })
+  .catch((error) => {
+    console.error("Error fetching data:", error);
+  });
+
 // 样式表
 let stylesArray = [
   {
@@ -110,7 +108,6 @@ let loadAMap = () => {
     });
 };
 
-const markerData = reactive({}); //存储请求返回的数据
 // 加载点标记
 let initAMapMaker = (AMap) => {
   AMap.plugin(["AMap.ElasticMarker"], function () {
@@ -127,10 +124,12 @@ let initAMapMaker = (AMap) => {
         isShowForm.value = true;
         axios({
           method: "get",
-          url: "/get_info_by_location?lat=" + lat + "&lon=" + lon,
+          // url: "http://localhost:5000/get_location/" + lat + "/" + lon,
+          url: "",
         }).then((res) => {
-          console.log(res.data);
-          markerData.value = res.data; // 将获取到的数据赋值给markerData
+          console.log("点击", res.data.result);
+          dialogData.value = res.data.result;
+          // isShowForm.value = true;
         });
       });
     }
@@ -141,15 +140,16 @@ let handleFormClick = async () => {
   const mmsi = inputvalue.value;
   console.log(mmsi);
   if (mmsi) {
+    isShowForm.value = true;
     try {
       axios({
         method: "get",
         // url: "http://localhost:5000/boats/" + mmsi,
-        url: "http://127.0.0.1:4523/m1/4090288-0-default/boats",
+        url: "",
       }).then((res) => {
-       console.log('11',dialogData.value);
-        dialogData.value = res.data;
-        isShowForm.value = true;
+        // isShowForm.value = true;
+        dialogData.value = res.data.result;
+        console.log("11", dialogData.value);
       });
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -164,6 +164,16 @@ const closeDialog = (val) => {
 };
 onMounted(() => {
   loadAMap();
+  axios({
+    method: "get",
+    url: "http://127.0.0.1:4523/m1/4090288-0-default/get_location",
+  })
+    .then((res) => {
+      console.log(res.data);
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
 });
 
 onUnmounted(() => {
@@ -174,15 +184,21 @@ onUnmounted(() => {
 <style scoped>
 #container {
   position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+  padding: 0px;
+  margin: 0px;
+  /* width: 1000px;
+  height: 950px; */
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  left: 0px;
 }
+/* 右上角白色卡片 */
 .input-card {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 0px;
+  /* left: 760px; */
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

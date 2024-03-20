@@ -17,35 +17,35 @@
         :label-position="labelPosition"
       >
         <el-form-item label="信息编号">
-          <el-input v-model="formInline.id" clearable />
+          <el-input v-model="formInline.id" disabled />
         </el-form-item>
         <el-form-item label="船只编号">
-          <el-input v-model="formInline.mmsi" clearable />
+          <el-input v-model="formInline.mmsi" disabled />
         </el-form-item>
         <el-form-item label="纬度">
-          <el-input v-model="formInline.lat" clearable />
+          <el-input v-model="formInline.lat" disabled />
         </el-form-item>
         <el-form-item label="经度">
-          <el-input v-model="formInline.lon" clearable />
+          <el-input v-model="formInline.lon" disabled />
         </el-form-item>
         <el-form-item label="航速">
-          <el-input v-model="formInline.speed" clearable />
+          <el-input v-model="formInline.speed" disabled />
         </el-form-item>
         <el-form-item label="时间">
-          <el-input v-model="formInline.time" clearable />
+          <el-input v-model="formInline.time" disabled />
         </el-form-item>
         <el-form-item label="航向">
-          <el-input v-model="formInline.direction" clearable />
+          <el-input v-model="formInline.direction" disabled />
         </el-form-item>
         <el-form-item label="类型">
-          <el-input v-model="formInline.type" clearable />
+          <el-input v-model="formInline.type" disabled />
         </el-form-item>
       </el-form>
     </el-dialog>
   </div>
 </template>
 <script setup>
-import { ref, watch, reactive, toRefs, onMounted } from "vue";
+import { ref, watch, reactive, toRefs, onMounted, onUpdated } from "vue";
 const props = defineProps({
   isShow: {
     type: Boolean,
@@ -55,12 +55,7 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  markerData: {
-    type: Object,
-    required: true,
-  },
 });
-const { isShow, dialogData, markerData } = toRefs(props);
 // 确保dialogData被解构后再使用其值初始化formInline
 const formInline = reactive({
   id: "",
@@ -72,34 +67,14 @@ const formInline = reactive({
   direction: "",
   type: "",
 });
-console.log('1111',dialogData.value);
-// 在钩子中初始化formInline的值，确保dialogData已准备就绪
-onMounted(() => {
-  // 点标记的数据
-  if (dialogData.value) {
-    // 点标记的数据
-    
-    Object.keys(formInline).forEach((key) => {
-      if (dialogData.value.hasOwnProperty(key)) {
-        formInline[key] = dialogData.value[key];
-      }
-    });
-   
-  } else {
-    console.log("请检查数据！");
-  }
 
-  // 搜索数据
-  if (dialogData.value && typeof dialogData.value === "object") {
-    Object.keys(formInline).forEach((key) => {
-      if (!formInline[key] && dialogData.value.hasOwnProperty(key)) {
-        formInline[key] = dialogData.value[key];
-      }
-    });
-  } else {
-    console.log("请检查数据！");
-  }
-});
+// 在钩子中初始化formInline的值，确保dialogData已准备就绪
+
+ let handleFormData = () => {
+ for (let key in formInline) {
+    if (props.dialogData[key]) formInline[key] = props.dialogData[key];
+   }
+ };
 
 const labelPosition = ref("right");
 const dialogVisible = ref(false);
@@ -113,12 +88,12 @@ watch(
   (val) => {
     // console.log(val);
     dialogVisible.value = val;
-  },
-  () => props.dialogData,
-  () => {
-    consloe.log(dialogData);
   }
 );
+
+onUpdated(() => {
+  handleFormData();
+});
 </script>
 <style scoped>
 :deep(.el-dialog) {
@@ -129,5 +104,8 @@ watch(
 }
 :deep(.el-form-item__label) {
   width: 70px;
+}
+.custom-dialog {
+  background-color: aqua;
 }
 </style>
