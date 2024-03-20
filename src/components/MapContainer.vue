@@ -47,7 +47,10 @@ let getPointArray = async () => {
   console.log("获取数据", res.data.results);
   for (let item of res.data.results) {
     const { lon, lat } = item;
+    coordinates.push([lat, lon]);
   }
+
+  console.log(coordinates);
 };
 
 getPointArray();
@@ -123,17 +126,11 @@ let initAMapMaker = (AMap) => {
       map.add(elasticMarker);
       let lon = position[0];
       let lat = position[1];
-      elasticMarker.on("click", () => {
+      elasticMarker.on("click", async () => {
         isShowForm.value = true;
-        axios({
-          method: "get",
-          // url: "http://localhost:5000/get_location/" + lat + "/" + lon,
-          url: "",
-        }).then((res) => {
-          console.log("点击", res.data.result);
-          dialogData.value = res.data.result;
-          // isShowForm.value = true;
-        });
+        const res = await request.get(`/get_location/119/40`);
+        console.log("输出数据", res);
+        dialogData.value = res.data.results;
       });
     }
   });
@@ -167,16 +164,6 @@ const closeDialog = (val) => {
 };
 onMounted(() => {
   loadAMap();
-  axios({
-    method: "get",
-    url: "http://127.0.0.1:4523/m1/4090288-0-default/get_location",
-  })
-    .then((res) => {
-      console.log(res.data);
-    })
-    .catch((error) => {
-      console.error("Error fetching data:", error);
-    });
 });
 
 onUnmounted(() => {
